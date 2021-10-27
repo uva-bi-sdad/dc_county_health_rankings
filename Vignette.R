@@ -1,3 +1,5 @@
+for (f in list.files("R/", full.names = T)) source(f)
+
 # Load the County Health Rankings Column Definitions
 load("data/county.hlth.rnks.columns.RData")
 
@@ -18,6 +20,15 @@ my_data_2021 <- get_data(year = "2021", data_type = "Ranked Measure Data", colum
 
 
 my_data <- data.table::rbindlist(list(
+  my_data_2015[, .(
+    geoid = `Geographic identifiers - FIPS`,
+    region_type = 'county',
+    year,
+    measure = "prevent_hosp_rate",
+    value = `Preventable hospital stays - Preventable Hosp. Rate` * 100,
+    measure_type = 'rate per 100K'
+  )],
+
   my_data_2016[, .(
     geoid = `Geographic identifiers - FIPS`,
     region_type = 'county',
@@ -84,5 +95,8 @@ DBI::dbDisconnect(con)
 mrg <- merge(my_data, counties, by = "geoid", all.x = T)[, .(geoid, region_type, region_name, year, measure, value, measure_type)]
 
 con <- get_db_conn()
+DBI::dbSendQuery(con, "drop table if exists dc_health_behavior_diet.va_ct_chr_2015_2021_preventable_hospitalizations")
 dc_dbWriteTable(con, schema_name = "dc_health_behavior_diet", table_name = "va_ct_chr_2015_2021_preventable_hospitalizations", mrg)
 DBI::dbDisconnect(con)
+
+write.csv(mrg, "data/va_ct_chr_2015_2021_preventable_hospitalizations.csv", row.names = FALSE)

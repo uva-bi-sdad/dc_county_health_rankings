@@ -1,0 +1,44 @@
+---
+title: "Find County Health Ranking Variables and Download Data"
+author: "Aaron D. Schroeder"
+date: "10/26/2021"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Find County Health Ranking Variables and Download Data}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+devtools::load_all()
+```
+
+## Load the County Health Rankings Column Definitions
+
+```{r load_column_definitions}
+load(here::here("data/county.hlth.rnks.columns.RData"))
+#data("county.hlth.rnks.columns.RData", package = "dc.chr.preventable.hospitalizations")
+```
+
+## List the Variable Categories
+
+```{r list_variable_categories}
+library(data.table)
+county_hlth_rnks_columns[, .(Category), c("DataType")]
+```
+
+## List all Variables in a Variable Category
+
+```{r list_category_variables}
+county_hlth_rnks_columns[Category=="Preventable hospital stays",]
+```
+
+## Download Data By Year, Data Type, and Column Numbers
+
+```{r}
+library(rio)
+my_data <- get_data(year = "2015", data_type = "Ranked Measure Data", columns = c(88, 91))
+print(my_data)
+```
+
